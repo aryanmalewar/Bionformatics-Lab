@@ -16,11 +16,11 @@ int main(){
 	FILE *fpt1;
 	fpt1 = fopen("1asy.pdb", "r");
 	char line[100], word[5], res_name[4], store_res_name[20000][4], res_num[5], atom_name[4], chain_id[20000], store_atom_name[20000][4];
-	float p, P, n, N, a, A, np, NP, h, H, pu, PU, py, PY, current_res_num; 
-	int i, c1, flag, total_rna, total_pro, store_res_num[20000];
+	float p, P, n, N, a, A, np, NP, h, H, pu, PU, py, PY, current_res_num, BB, SC; 
+	int i, c1, flag, total_rna, total_pro, store_res_num[20000], backbone, sidechain;
 
-	c1 = flag = 0;
-	p = P = N = n = a = A = np = NP = h = H = PU = PY = 0.0;	
+	c1 = flag = backbone = sidechain = 0;
+	p = P = N = n = a = A = np = NP = h = H = PU = PY = 0.0;
 
 	while(fgets(line, 100, fpt1) != NULL){
 			
@@ -33,7 +33,7 @@ int main(){
 				res_name[i] = line[i+17];
 			}
 				res_name[3] = '\0';
-				strcopy(store_res_name[c1], res_name);
+				strcpy(store_res_name[c1], res_name);
 			
 			//chain id
 			chain_id[c1] = line[21];
@@ -43,18 +43,18 @@ int main(){
 			res_num[4] = '\0';
 			store_res_num[c1] = atoi(res_num);
 
-			if(strcmp(res_name, "A") != 0 || strcmp(res_name, "U") != 0 || strcmp(res_name, "G") != 0 || strcmp(res_name, "C") != 0){
+			if(strcmp(res_name, "  A") != 0 || strcmp(res_name, "  U") != 0 || strcmp(res_name, "  G") != 0 || strcmp(res_name, "  C") != 0){
 				
 				for(i =0; i < 3; i++) atom_name[i] = line[13+i];
-					
 				atom_name[4] = '\0';
+					
 				strcpy(store_atom_name[c1], atom_name);
-				if(strcmp(atom_name, "N  ") == 0 || (strcmp(atom_name, "CA  ") == 0 || (strcmp(atom_name, "C  ") == 0 || (strcmp(atom_name, "O  ") == 0))) backbone++;
+				if(strcmp(atom_name, "N  ") == 0 || strcmp(atom_name, "CA ") == 0 || strcmp(atom_name, "C  ") == 0 || strcmp(atom_name, "O  ") == 0) backbone++;
 				else sidechain++;
 			}
 
 			current_res_num = atoi(res_num);
-			if(flag != current_res_num) 
+			if(flag != current_res_num){ 
 
 				flag = current_res_num;
 			
@@ -63,10 +63,11 @@ int main(){
 				else if(strcmp(store_res_name[c1],"PHE") == 0 || strcmp(store_res_name[c1],"TYR") == 0 || strcmp(store_res_name[c1],"TRP") == 0)  a++;
 				else if(strcmp(store_res_name[c1],"GLY") == 0 || strcmp(store_res_name[c1],"ALO") == 0 || strcmp(store_res_name[c1],"VAL") == 0 || strcmp(store_res_name[c1],"LEU") == 0 || strcmp(store_res_name[c1],"ILE") == 0 || strcmp(store_res_name[c1],"PRO") == 0)  h++;
 				else if(strcmp(store_res_name[c1],"ASN") == 0 || strcmp(store_res_name[c1],"GLN") == 0 || strcmp(store_res_name[c1],"SER") == 0 || strcmp(store_res_name[c1],"THR") == 0 || strcmp(store_res_name[c1],"CYS") == 0 || strcmp(store_res_name[c1],"MET") == 0 || strcmp(store_res_name[c1], "HIS"))  np++;
-				//else if(strcmp(store_res_name[c1],"A") == 0 || strcmp(store_res_name[c1],"G") == 0) pu++;
-				//else if(strcmp(store_res_name[c1],"C") == 0 || strcmp(store_res_name[c1],"u") == 0) py++;
+				else if(strcmp(store_res_name[c1],"  A") == 0 || strcmp(store_res_name[c1],"  G") == 0) pu++;
+				else if(strcmp(store_res_name[c1],"  C") == 0 || strcmp(store_res_name[c1],"  U") == 0) py++;
 
 				c1++;
+			}
 		}
 
 	}
@@ -79,8 +80,27 @@ int main(){
 	//PU = (pu/(pu + py))*100;
 	//PY = (pu/(pu + py))*100;
 	total_rna = pu + py;
-	total_pro = p + n + a + np +h;
+	total_pro = p + n + a + np + h;
+	BB = (backbone/(backbone+sidechain)) * 100;
+	SC = (sidechain/(backbone+sidechain)) * 100;
+
+
+
+	printf("Total amino acids in the protein chain is: %d\n", total_pro);
+	printf("Percentage of positively charged amino acid residues is: %6.2f\n", P);
+	printf("Percentage of negatively charged amino acid residues is: %6.2f\n", N);
+	printf("Percentage of aromatic amino acid residues is: %6.2f\n", A);
+	printf("Percentage of neutral polar acid residues is: %6.2f\n", NP);
+	printf("Percentage of hydrophobic amino acid residues is: %6.2f\n", H);
+	printf("Total nucleotide bases in the rna chain is: %d\n", total_rna);
+	//printf("Percentage of purine bases is: %6.2f\n", PU);
+	//printf("Percentage of pyridine bases is: %6.2f\n", PY);
+	printf("Total number of backbone atoms is: %d\n", backbone);
+	printf("Total number of sidechain atoms is: %d\n", sidechain);
+	printf("Percentage of backbone atoms is: %6.2f\n", BB);
+	printf("Percentage of backbone atoms is: %6.2f\n", SC);
+	printf("%f, %f", pu, py);
+
 
 	return 0;
 }
-
